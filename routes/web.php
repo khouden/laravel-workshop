@@ -1,7 +1,19 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
+// Groupe avec sous-domaine (OUTSIDE admin prefix)
+Route::domain('blog.localhost')->group(function () {
+    Route::get('/', function () {
+        return 'Blog Homepage';
+    });
+    
+    Route::get('/article/{slug}', function ($slug) {
+        return "Blog Article: $slug";
+    });
+}); 
 
 ########################## Route de base ##################
 
@@ -90,15 +102,24 @@ Route::prefix('api')->name('api.')->group(function () {
     })->name('comments');
 });
 
-// Groupe avec sous-domaine
-Route::domain('blog.localhost')->group(function () {
-    Route::get('/', function () {
-        return 'Blog Homepage';
-    });
-    
-    Route::get('/article/{slug}', function ($slug) {
-        return "Blog Article: $slug";
-    });
 });
 
-}); 
+
+
+Route::get('/form', function(){
+    return view('form');
+});
+
+Route::post('/submit', function(Request $reauest){
+    return "Donnees recues: ". $reauest->input('name');
+})->name('submit');
+
+Route::put('/update/{id}', function($id, Request $request){
+    return "Mise a jour de l'element $id avec: ". $request->input('data');
+})->name('update');
+
+Route::delete('/delete/{id}', function($id){
+    return "Element $id supprime";
+})->name('delete');
+
+
