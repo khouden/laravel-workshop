@@ -35,4 +35,17 @@ Route::delete('/products/{id}', function ($id) {
     return redirect()->route('products.index')->with('success', 'Product deleted successfully!');
 })->name('products.destroy');
 
+// GET /contact – show contact form
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
 
+// POST /contact – handle contact form submission
+Route::post('/contact', function (Request $request) {
+    $request->validate([
+        'email'   => 'required|email',
+        'message' => 'required|min:10',
+    ]);
+
+    return redirect()->route('contact')->with('success', 'Message sent successfully!');
+})->name('contact.send');
