@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Article;
-use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -71,25 +70,21 @@ Route::get('/articles/{article}', function (Article $article) {
 // Try: /dashboard              → blocked (403)
 // Try: /dashboard?token=secret123 → allowed ✅
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(function (Request $request, Closure $next) {
+Route::get('/dashboard', function (Request $request) {
     if ($request->query('token') !== 'secret123') {
         abort(403, 'Access denied. Invalid token.');
     }
-    return $next($request);
+    return view('dashboard');
 })->name('dashboard');
 
 // Middleware on a group of routes
 // All /admin/* routes require ?token=secret123
-Route::middleware(function (Request $request, Closure $next) {
-    if ($request->query('token') !== 'secret123') {
-        abort(403, 'Access denied. Admin area.');
-    }
-    return $next($request);
-})->prefix('admin')->group(function () {
+Route::prefix('admin')->group(function () {
 
-    Route::get('/stats', function () {
+    Route::get('/stats', function (Request $request) {
+        if ($request->query('token') !== 'secret123') {
+            abort(403, 'Access denied. Admin area.');
+        }
         return view('admin.stats');
     })->name('admin.stats');
 
