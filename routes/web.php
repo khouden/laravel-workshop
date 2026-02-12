@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Article;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -44,8 +46,51 @@ Route::get('/contact', function () {
 Route::post('/contact', function (Request $request) {
     $request->validate([
         'email'   => 'required|email',
-        'message' => 'required|min:10',
+        'message' => 'required|min:10', 
     ]);
 
     return redirect()->route('contact')->with('success', 'Message sent successfully!');
 })->name('contact.send');
+
+// GET /articles – list all articles
+Route::get('/articles', function () {
+    $articles = Article::all();
+    return view('articles.index', compact('articles'));
+})->name('articles.index');
+
+// Route Model Binding – show a single article
+Route::get('/articles/{article}', function (Article $article) {
+    return view('articles.show', compact('article'));
+})->name('articles.show');
+
+// =============================================
+// Middleware Example
+// =============================================
+
+// Simple middleware: check for ?token=secret123 in the URL
+// Try: /dashboard              → blocked (403)
+// Try: /dashboard?token=secret123 → allowed ✅
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(function (Request $request, Closure $next) {
+    if ($request->query('token') !== 'secret123') {
+        abort(403, 'Access denied. Invalid token.');
+    }
+    return $next($request);
+})->name('dashboard');
+
+// Middleware on a group of routes
+// All /admin/* routes require ?token=secret123
+Route::middleware(function (Request $request, Closure $next) {
+    if ($request->query('token') !== 'secret123') {
+        abort(403, 'Access denied. Admin area.');
+    }
+    return $next($request);
+})->prefix('admin')->group(function () {
+
+    Route::get('/stats', function () {
+        return view('admin.stats');
+    })->name('admin.stats');
+
+});
