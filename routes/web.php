@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
 use App\Models\Article;
 use Illuminate\Http\Request;
@@ -9,44 +12,40 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [WelcomeController::class, 'index']);
 
 
+Route::controller(UserController::class)->group(function(){
+    Route::get('/users', 'create')->name('users');
+    Route::post('/users', 'store');
+});
 
+Route::controller(ProductController::class)->group(function(){
 
+    // GET /products – list all products + show add form
+    Route::get('/products', 'index')->name('products.index');
+    
+    // POST /products – store a new product
+    Route::post('/products', 'store')->name('products.store');
+    
+    // DELETE /products/{id} – remove a product
+    Route::delete('/products/{id}', 'delete')->name('products.destroy');
+});
 
+Route::controller(ContactController::class)->group(function(){
 
-// GET /products – list all products + show add form
-Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    // GET /contact – show contact form
+    Route::get('/contact', 'index')->name('contact');
+    
+    // POST /contact – handle contact form submission
+    Route::post('/contact', 'store')->name('contact.send');
+});
 
-// POST /products – store a new product
-Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-
-// DELETE /products/{id} – remove a product
-Route::delete('/products/{id}', [ProductController::class, 'delete'])->name('products.destroy');
-
-// GET /contact – show contact form
-Route::get('/contact', function () {
-    return view('contact');
-})->name('contact');
-
-// POST /contact – handle contact form submission
-Route::post('/contact', function (Request $request) {
-    $request->validate([
-        'email'   => 'required|email',
-        'message' => 'required|min:10', 
-    ]);
-
-    return redirect()->route('contact')->with('success', 'Message sent successfully!');
-})->name('contact.send');
-
-// GET /articles – list all articles
-Route::get('/articles', function () {
-    $articles = Article::all();
-    return view('articles.index', compact('articles'));
-})->name('articles.index');
-
-// Route Model Binding – show a single article
-Route::get('/articles/{article}', function (Article $article) {
-    return view('articles.show', compact('article'));
-})->name('articles.show');
+Route::controller(ArticleController::class)->group(function(){
+    
+    // GET /articles – list all articles
+    Route::get('/articles', 'index')->name('articles.index');
+    
+    // Route Model Binding – show a single article
+    Route::get('/articles/{article}', 'show')->name('articles.show');
+});
 
 // =============================================
 // Middleware Example
